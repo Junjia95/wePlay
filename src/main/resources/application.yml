@@ -5,6 +5,16 @@ spring:
     username: root
     password: root
 
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+        max-wait: 100ms
+
 mybatis:
   mapper-locations: classpath:mapper/*.xml
   type-aliases-package: cn/cie/entity
