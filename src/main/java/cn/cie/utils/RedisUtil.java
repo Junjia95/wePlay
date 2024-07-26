@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
+
 @Component
 public class RedisUtil {
 
@@ -42,5 +44,22 @@ public class RedisUtil {
 
         return obj;
     }
+
+
+    public void setStringEx(String key, String value, int timeout){
+        stringRedisTemplate.opsForValue().set(key, value, Duration.ofMinutes(timeout));
+    }
+
+
+    public <T> void setObjEx(String key, T obj, int timeout){
+        try {
+            String value = MAPPER.writeValueAsString(obj);
+            stringRedisTemplate.opsForValue().set(key, value, Duration.ofMinutes(timeout));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
 
 }

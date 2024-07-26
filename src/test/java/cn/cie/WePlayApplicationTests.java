@@ -62,4 +62,9 @@ class WePlayApplicationTests {
         System.out.println(obj);
     }
 
+    @Test
+    void testEx(){
+        redisUtil.setStringEx("name:3", "maliu", 1);
+    }
+
 }
