@@ -2,6 +2,9 @@ package cn.cie.services.impl;
 
 import cn.cie.entity.User;
 import cn.cie.entity.Validatecode;
+import cn.cie.event.EventModel;
+import cn.cie.event.EventProducer;
+import cn.cie.event.EventType;
 import cn.cie.mapper.UserMapper;
 import cn.cie.services.UserService;
 import cn.cie.utils.MsgCenter;
@@ -24,8 +27,8 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private RedisUtil redisUtil;
 
-//    @Autowired
-//    private EventProducer eventProducer;
+    @Autowired
+    private EventProducer eventProducer;
 
     @Override
     public Result register(User user) {
@@ -60,11 +63,10 @@ public class UserServiceImpl implements UserService {
         if (1 == userMapper.insert(user)){
             String uuid = UUID.randomUUID().toString();
             redisUtil.setStringEx("validatecode_" + user.getId(), uuid, Validatecode.TIMEOUT); //存入redis
-
+            eventProducer.product(new EventModel(EventType.SEND_VALIDATE_EMAIL).setExts("mail", user.getEmail()).setExts("code", uuid));
+            return Result.success(user.getId());
         }
-
-
-        return null;
+        return Result.fail(MsgCenter.ERROR);
     }
 
     @Override

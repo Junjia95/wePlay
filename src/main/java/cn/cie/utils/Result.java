@@ -2,16 +2,24 @@ package cn.cie.utils;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-@AllArgsConstructor
-@Data
+import lombok.Getter;
+
+
+@Getter
 public class Result<T> {
     private boolean success;
     private String msg;
     private T data;
 
-    public Result(boolean success, String msg) {
+    private Result(boolean success, String msg) {
         this.success = success;
         this.msg = msg;
+    }
+
+    private Result(boolean success, String msg, T data) {
+        this.success = success;
+        this.msg = msg;
+        this.data = data;
     }
 
     public static Result success() {

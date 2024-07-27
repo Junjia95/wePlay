@@ -2,7 +2,9 @@ package cn.cie;
 
 import cn.cie.entity.User;
 import cn.cie.mapper.UserMapper;
+import cn.cie.services.UserService;
 import cn.cie.utils.RedisUtil;
+import cn.cie.utils.Result;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -23,6 +25,9 @@ class WePlayApplicationTests {
 
     @Autowired
     private RedisUtil redisUtil;
+
+    @Autowired
+    private UserService userService;
 
     @Test
     void contextLoads() {
@@ -72,6 +77,21 @@ class WePlayApplicationTests {
         Boolean delete = redisUtil.delete("user:1");
         System.out.println(delete);
     }
+
+    @Test
+    void register(){
+        User user= new User();
+        user.setUsername("zhangsan");
+        user.setPassword("123456");
+        user.setNickname("zhangsan");
+        user.setEmail("zhangsan@123.com");
+        user.setPhone(13305191928L);
+        Result result = userService.register(user);
+        System.out.println(result.isSuccess());
+        System.out.println(result.getMsg());
+        System.out.println(result.getData());
+    }
+
 
 
 }

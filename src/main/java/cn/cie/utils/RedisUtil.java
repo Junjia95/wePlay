@@ -156,7 +156,7 @@ public class RedisUtil<T> {
      * @param values
      * @return
      */
-    public long rpushObject(String key, Class clazz, Object... values) {
+    public long rpushObject(String key, Object... values) {
         if (values == null || values.length == 0) {
             return 0;
         }
@@ -182,7 +182,7 @@ public class RedisUtil<T> {
      * @param values
      * @return
      */
-    public long rpushObjectExAtTime(String key, Class clazz, long time, Object... values) {
+    public long rpushObjectExAtTime(String key, long time, Object... values) {
         if (values.length == 0) {
             return 0;
         }
