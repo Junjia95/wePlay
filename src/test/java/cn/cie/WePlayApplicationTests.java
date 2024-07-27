@@ -58,13 +58,20 @@ class WePlayApplicationTests {
     void testRedisUtil(){
         User user = userMapper.selectById(1);
         redisUtil.setObj("user:1", user);
-        User obj = redisUtil.getObj("user:1", user);
-        System.out.println(obj);
+        User u2 = (User)redisUtil.getObj("user:1", User.class);
+        System.out.println(u2);
     }
 
     @Test
     void testEx(){
-        redisUtil.setStringEx("name:3", "maliu", 1);
+        redisUtil.setStringEx("name:3", "maliu", 10);
     }
+
+    @Test
+    void testDel(){
+        Boolean delete = redisUtil.delete("user:1");
+        System.out.println(delete);
+    }
+
 
 }
