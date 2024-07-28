@@ -7,13 +7,11 @@ import cn.cie.event.EventProducer;
 import cn.cie.event.EventType;
 import cn.cie.mapper.UserMapper;
 import cn.cie.services.UserService;
-import cn.cie.utils.MsgCenter;
-import cn.cie.utils.PasswordUtil;
-import cn.cie.utils.RedisUtil;
-import cn.cie.utils.Result;
+import cn.cie.utils.*;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -30,7 +28,11 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private EventProducer eventProducer;
 
+    @Autowired
+    private UserHolder userHolder;
+
     @Override
+    @Transactional
     public Result register(User user) {
         //验证参数是否合法
         if (StringUtils.isBlank(user.getUsername())) {
@@ -70,13 +72,34 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public Result sendMail(User user) {
-        return null;
+        if (user.getStat().equals(User.STAT_OK)) {    // 用户已经验证过了
+            return Result.fail(MsgCenter.USER_VALIDATED);
+        }
+        String uuid = UUID.randomUUID().toString();
+        // 将数据存入redis中，固定时间后过期
+        redisUtil.setStringEx("validatecode_" + user.getId(), uuid, Validatecode.TIMEOUT);
+        // 将邮件发送事件添加到异步事件队列中去
+        eventProducer.product(new EventModel(EventType.SEND_VALIDATE_EMAIL).setExts("mail", user.getEmail()).setExts("code", uuid));
+        return Result.success();
     }
 
     @Override
+    @Transactional
     public Result validate(Integer uid, String code) {
-        return null;
+        String uuid = redisUtil.getString("validatecode_" + uid);
+        if (code != null && code.length() == 36 && code.equals(uuid)) {
+            User user = userHolder.getUser();
+            user.setStat(User.STAT_OK);
+            if (1 == userMapper.update(user)) {
+                redisUtil.delete("validatecode_" + uid);        // 验证成功后删除验证码
+                return Result.success();
+            } else {
+                return Result.fail(MsgCenter.ERROR);
+            }
+        }
+        return Result.fail(MsgCenter.CODE_ERROR);
     }
 
     @Override
